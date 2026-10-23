@@ -1,4 +1,5 @@
 from django.db import models
+
 from users.models import User
 
 from .constants import MAX_LENGTH_NAME, MAX_LENGTH_SLUG, Frequency, Status
@@ -58,12 +59,13 @@ class Medicine(models.Model):
 class Schedule(models.Model):
     medicine = models.ForeignKey(
         Medicine,
+        on_delete=models.CASCADE,
         related_name="schedules",
         verbose_name="Лекарство",
     )
     time_of_day = models.DateTimeField(verbose_name="Время приема")
     frequency = models.CharField(
-        choices=Frequency.choices, verbose_name="Периодичность"
+        choices=Frequency.choices, max_length=20, verbose_name="Периодичность"
     )
     start_date = models.DateField(verbose_name="Дата начала приема")
     end_date = models.DateField(
@@ -89,7 +91,9 @@ class IntakeLog(models.Model):
     taken_at = models.DateTimeField(
         null=True, blank=True, verbose_name="Фактическое время приема"
     )
-    status = models.CharField(choices=Status.choices, verbose_name="Статус")
+    status = models.CharField(
+        choices=Status.choices, max_length=20, verbose_name="Статус"
+    )
 
     class Meta:
         verbose_name = "Запись о приёме"
