@@ -58,12 +58,12 @@
   - [x] `status` — принято / пропущено / запланировано
 
 ### 🔹 Этап 3: CRUD-операции
-- [ ] Добавление лекарства (`MedicineCreateView`)
-- [ ] Список лекарств (`MedicineListView`) с карточками
-- [ ] Редактирование лекарства (`MedicineUpdateView`)
-- [ ] Удаление лекарства (`MedicineDeleteView`)
-- [ ] Создание графика приёма (`ScheduleCreateView`)
-- [ ] Валидация: `expiry_date > purchase_date`
+- [x] Добавление лекарства (`MedicineCreateView`)
+- [~] Список лекарств (`MedicineListView`) с карточками
+- [x] Редактирование лекарства (`MedicineUpdateView`)
+- [x] Удаление лекарства (`MedicineDeleteView`)
+- [~] Создание графика приёма (`ScheduleCreateView`)
+- [x] Валидация: `expiry_date > purchase_date`
 
 ### 🔹 Этап 4: Аутентификация
 - [ ] Регистрация пользователя

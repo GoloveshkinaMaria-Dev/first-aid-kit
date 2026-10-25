@@ -1,111 +1,24 @@
-# ===== Python =====
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 
-# ===== Виртуальные окружения =====
-.venv/
+# Виртуальное окружение
 venv/
-ENV/
+.venv/
 env/
-.env/
-.python-version
 
-# ===== Тестирование =====
-.pytest_cache/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-htmlcov/
-coverage/
-
-# ===== Type checkers / линтеры =====
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.ruff_cache/
-.pyre/
-.pytype/
-
-# ===== Jupyter Notebook =====
-.ipynb_checkpoints/
-
-# ===== Django =====
-*.log
-local_settings.py
+# Django
 db.sqlite3
 db.sqlite3-journal
-media/
-staticfiles/
+/media/
+/staticfiles/
 
-# ===== Flask =====
-instance/
-.webassets-cache
-
-# ===== PyInstaller =====
-*.manifest
-*.spec
-
-# ===== Переменные окружения и секреты =====
+# Переменные окружения
 .env
 .env.*
-!.env.example
-*.pem
-*.key
 
-# ===== IDE / Редакторы =====
-.idea/
+# IDE
 .vscode/
+.idea/
 *.swp
-*.swo
-*~
-.project
-.pydevproject
-.settings/
-
-# ===== OS =====
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# ===== Логи =====
-*.log
-logs/
-
-# ===== Прочее =====
-*.sqlite3
-*.db
-.cache/
-tmp/
-temp/
