@@ -57,13 +57,13 @@ class Medicine(models.Model):
 
 
 class Schedule(models.Model):
-    medicine = models.ForeignKey(
+    medicine = models.ManyToManyField(
         Medicine,
-        on_delete=models.CASCADE,
         related_name="schedules",
         verbose_name="Лекарство",
     )
-    time_of_day = models.DateTimeField(verbose_name="Время приема")
+    days_of_week = models.JSONField(default=list, verbose_name="Дни приема")
+    time_of_day = models.TimeField(verbose_name="Время приема")
     frequency = models.CharField(
         choices=Frequency.choices, max_length=20, verbose_name="Периодичность"
     )
@@ -79,6 +79,13 @@ class Schedule(models.Model):
     def __str__(self):
         return f"{self.medicine.name} — {self.get_frequency_display()} в {self.time_of_day}"
 
+class ScheduleSlot(models.Model):
+    schedule = models.ForeignKey(
+        Schedule,
+        related_name="slots",
+        on_delete=models.CASCADE
+    )
+    time = models.TimeField(verbose_name="Время приема")
 
 class IntakeLog(models.Model):
     schedule = models.ForeignKey(
@@ -86,6 +93,12 @@ class IntakeLog(models.Model):
         on_delete=models.CASCADE,
         verbose_name="График",
         related_name="logs",
+    )
+    medicine = models.ForeignKey(
+        Medicine,
+        on_delete=models.CASCADE,
+        verbose_name="Лекарство",
+        related_name="medlogs",
     )
     scheduled_at = models.DateTimeField(verbose_name="Запланированное время")
     taken_at = models.DateTimeField(
