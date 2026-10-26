@@ -1,7 +1,6 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-
 from .models import User
 
 
@@ -21,10 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AvatarSerializer(serializers.ModelSerializer):
-    avatar = Base64ImageField(
-        required=True,
-        allow_null=False
-    )
+    avatar = Base64ImageField(required=True, allow_null=False)
 
     class Meta:
         model = User
