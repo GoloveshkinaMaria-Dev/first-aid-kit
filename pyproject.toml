@@ -1,0 +1,89 @@
+[project]
+name = "first-aid-kit"
+version = "0.1.0"
+description = "First aid kit - schedule and medicine tracking"
+requires-python = ">=3.12"
+dependencies = [
+    # Основные фреймворки
+    "django>=5.1,<5.2",
+    "djangorestframework>=3.15.0",
+    "djoser>=2.3.0",
+    "django-filter>=24.0",
+    "djangorestframework-simplejwt>=5.3.0",
+    "Pillow>=10.0.0", # Для ImageField (аватарки)
+    
+    # Асинхронные задачи (ARQ)
+    "arq>=0.26.0",
+    "redis>=5.0.0",
+    
+    # Утилиты
+    "python-decouple>=3.8", # Для чтения .env
+]
+
+# Группа зависимостей для разработки (устанавливаются через: uv pip install -e ".[dev]" или pip install -e ".[dev]")
+[project.optional-dependencies]
+dev = [
+    # Тестирование
+    "pytest>=8.0.0",
+    "pytest-django>=4.8.0",
+    "pytest-asyncio>=0.23.0",
+    
+    # Линтеры и форматтеры
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+    
+    # Типы для mypy
+    "types-redis",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings" # Указываем Django, где лежат настройки
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+addopts = "-v --reuse-db" # Сохраняем тестовую БД для ускорения
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"] # Вместо pydantic, так как проект на Django
+mypy_path = "."
+explicit_package_bases = true
+ignore_missing_imports = false
+check_untyped_defs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "config.*"
+disable_error_code = ["call-arg"]
+
+[[tool.mypy.overrides]]
+module = ["arq.*", "djoser.*", "rest_framework_simplejwt.*"]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort (сортировка импортов)
+    "UP",  # pyupgrade (современный синтаксис)
+    "B",   # flake8-bugbear (поиск багов)
+    "TRY", # tryceratops (правильная обработка исключений)
+    "RUF", # Ruff-specific rules
+    "DJ",  # flake8-django (правила для Django)
+]
+extend-ignore = [
+    "B008",  # Do not perform function call in default argument (Django любит это делать в view)
+    "RUF012", # Mutable class attributes should be annotated with typing.ClassVar
+    "RUF001", # String contains ambiguous unicode character (русские буквы)
+    "TRY003", # Avoid specifying long messages outside the exception class
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["medicines", "users", "config"]
