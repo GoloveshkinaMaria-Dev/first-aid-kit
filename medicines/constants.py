@@ -1,7 +1,7 @@
+from django.db import models
+
 MAX_LENGTH_NAME = 30
 MAX_LENGTH_SLUG = 30
-
-from django.db import models
 
 
 class Frequency(models.TextChoices):
@@ -17,3 +17,8 @@ class Status(models.TextChoices):
     TAKEN = "taken", "Принято"
     MISSED = "missed", "Пропущено"
     SKIPPED = "skipped", "Отменено"
+
+
+WRONG_USER_SCHEDULE = "Нельзя создать график для чужого лекарства."
+INVALID_DATE = "Дата окончания не может быть раньше даты начала."
+ADD_TIME = "Добавьте хотя бы одно время приема."
