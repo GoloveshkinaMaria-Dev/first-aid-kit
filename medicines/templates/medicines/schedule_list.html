@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мое расписание</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .schedule-card { transition: transform 0.2s; border-left: 5px solid #0d6efd; }
+        .schedule-card:hover { transform: translateX(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .time-badge { font-size: 1.1rem; font-weight: bold; background: #e9ecef; padding: 5px 10px; border-radius: 5px; }
+        .day-badge { background: #0d6efd; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; margin-right: 3px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/my-kit/">🏥 First Aid Kit</a>
+        <div class="d-flex">
+            <a href="/my-kit/" class="btn btn-outline-light btn-sm me-2">Мои лекарства</a>
+            <a href="/my-schedule/" class="btn btn-outline-light btn-sm">Расписание</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>График приёма</h2>
+        <!-- Ссылка на добавление в админке (пока делаем через админку) -->
+        <a href="/admin/medicines/schedule/add/" class="btn btn-primary">
+            + Новый график
+        </a>
+    </div>
+
+    <div class="row">
+        {% for schedule in schedules %}
+        <div class="col-md-6 mb-4">
+            <div class="card schedule-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5 class="card-title">Курс лечения</h5>
+                        <!-- Бейджи дней недели -->
+                        <div>
+                            {% if schedule.days_of_week %}
+                                {% for day in schedule.days_of_week %}
+                                    <span class="day-badge">
+                                        {% if day == 1 %}Пн
+                                        {% elif day == 2 %}Вт
+                                        {% elif day == 3 %}Ср
+                                        {% elif day == 4 %}Чт
+                                        {% elif day == 5 %}Пт
+                                        {% elif day == 6 %}Сб
+                                        {% elif day == 7 %}Вс
+                                        {% endif %}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="badge bg-secondary">Каждый день</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Лекарства в этом графике (ManyToMany) -->
+                    <p class="mb-2">
+                        <strong>Лекарства:</strong><br>
+                        {% for med in schedule.medicines.all %}
+                            <span class="badge bg-info text-dark me-1">{{ med.name }}</span>
+                        {% endfor %}
+                    </p>
+
+                    <!-- Временные слоты -->
+                    <p class="mb-2">
+                        <strong>Время приёма:</strong><br>
+                        {% for slot in schedule.slots.all %}
+                            <span class="time-badge me-1">{{ slot.time|time:"H:i" }}</span>
+                        {% empty %}
+                            <span class="text-muted">Время не указано</span>
+                        {% endfor %}
+                    </p>
+
+                    <!-- Даты курса -->
+                    <hr>
+                    <p class="text-muted small mb-0">
+                        <strong>Период:</strong> 
+                        {{ schedule.start_date|date:"d.m.Y" }} 
+                        {% if schedule.end_date %}
+                            — {{ schedule.end_date|date:"d.m.Y" }}
+                        {% else %}
+                            — бессрочно
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center mt-5">
+            <h4 class="text-muted">Расписание пусто :( </h4>
+            <p>Создайте график приёма, чтобы не забывать пить таблетки.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>
