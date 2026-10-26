@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import ScheduleView, MedicineView
+from .views import MedicineView, ScheduleView
 
 router = DefaultRouter()
 router.register("medicines", MedicineView, basename="medicine")
