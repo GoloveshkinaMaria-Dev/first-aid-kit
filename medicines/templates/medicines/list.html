@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя аптечка</title>
+    <!-- Подключаем Bootstrap для красоты -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .medicine-card { transition: transform 0.2s; }
+        .medicine-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .badge-expiring { background-color: #ffc107; color: #000; }
+        .badge-expired { background-color: #dc3545; color: #fff; }
+        .badge-ok { background-color: #198754; color: #fff; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#"> First Aid Kit</a>
+        <div class="d-flex">
+            <span class="navbar-text me-3">
+                Привет, {{ request.user.username }}!
+            </span>
+            <a href="/admin/" class="btn btn-outline-light btn-sm">Админка</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Мои лекарства</h2>
+        <a href="/admin/medicines/medicine/add/" class="btn btn-primary">
+            + Добавить лекарство
+        </a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- Начало цикла по лекарствам -->
+        {% for med in medicines %}
+        <div class="col">
+            <div class="card h-100 medicine-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ med.name }}</h5>
+                    
+                    <!-- Логика бейджа срока годности -->
+                    {% if med.is_expired %}
+                        <span class="badge badge-expired">Просрочено!</span>
+                    {% elif med.is_expiring_soon %}
+                        <span class="badge badge-expiring">Скоро истекает</span>
+                    {% else %}
+                        <span class="badge badge-ok">Годен</span>
+                    {% endif %}
+                </div>
+                
+                <div class="card-body">
+                    <p class="card-text mb-1">
+                        <strong>Дозировка:</strong> {{ med.dosage }} мг
+                    </p>
+                    <p class="card-text mb-1">
+                        <strong>Количество:</strong> {{ med.quantity }} шт.
+                    </p>
+                    <p class="card-text mb-1">
+                        <strong>Куплено:</strong> {{ med.purchase_date|date:"d.m.Y" }}
+                    </p>
+                    <p class="card-text text-muted small">
+                        Годен до: {{ med.expiry_date|date:"d.m.Y" }}
+                    </p>
+                </div>
+                
+                <div class="card-footer bg-transparent d-flex justify-content-between">
+                    <a href="/admin/medicines/medicine/{{ med.id }}/change/" class="btn btn-sm btn-outline-secondary">
+                        Редактировать
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Если лекарств нет -->
+        <div class="col-12 text-center mt-5">
+            <h4 class="text-muted">В аптечке пока пусто :( </h4>
+            <p>Добавьте первое лекарство, чтобы следить за сроками годности и графиком приема.</p>
+        </div>
+        {% endfor %}
+        <!-- Конец цикла -->
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

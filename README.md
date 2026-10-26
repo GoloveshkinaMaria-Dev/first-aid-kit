@@ -34,7 +34,7 @@
 - [ ] Подключить PostgreSQL
 - [ ] Настроить `.env` и `django-environ`
 - [ ] Настроить статику и шаблоны (base.html)
-- [ ] Подключить Bootstrap 5 для вёрстки
+- [x] Подключить Bootstrap 5 для вёрстки
 
 ### 🔹 Этап 2: Модели данных
 - [x] Модель `User` (переопределена `AbstractUser`)
@@ -51,6 +51,7 @@
   - [x] `time_of_day` — время приёма
   - [x] `frequency` — периодичность (ежедневно / через день / по дням недели)
   - [x] `start_date`, `end_date`
+- [x] Модель `ScheduleSlot`
 - [x] Модель `IntakeLog`:
   - [x] `schedule` — FK
   - [x] `scheduled_at` — запланированное время
@@ -58,12 +59,12 @@
   - [x] `status` — принято / пропущено / запланировано
 
 ### 🔹 Этап 3: CRUD-операции
-- [ ] Добавление лекарства (`MedicineCreateView`)
-- [ ] Список лекарств (`MedicineListView`) с карточками
-- [ ] Редактирование лекарства (`MedicineUpdateView`)
-- [ ] Удаление лекарства (`MedicineDeleteView`)
-- [ ] Создание графика приёма (`ScheduleCreateView`)
-- [ ] Валидация: `expiry_date > purchase_date`
+- [~] Добавление лекарства (`MedicineCreateView`)
+- [x] Список лекарств (`MedicineListView`) с карточками
+- [x] Редактирование лекарства (`MedicineUpdateView`)
+- [x] Удаление лекарства (`MedicineDeleteView`)
+- [~] Создание графика приёма (`ScheduleCreateView`)
+- [x] Валидация: `expiry_date > purchase_date`
 
 ### 🔹 Этап 4: Аутентификация
 - [ ] Регистрация пользователя
@@ -95,7 +96,7 @@
 - [ ] Статистика: % пропущенных доз
 
 ### 🔹 Этап 8: UX и фронтенд
-- [ ] Верстка
+- [~] Верстка
 - [ ] Уведомления django-messages
 - [ ] Поиск и фильтры по лекарствам
 - [ ] Пагинация списка
@@ -118,7 +119,10 @@
 
 ## 📸 Скриншоты
 
-_..._
+<img width="953" height="539" alt="Снимок экрана 2026-10-26 094518" src="https://github.com/user-attachments/assets/9f8a433d-735f-477b-a11a-9b97f8cd5aa2" />
+<img width="945" height="744" alt="Снимок экрана 2026-10-26 094634" src="https://github.com/user-attachments/assets/f4735f0a-d7db-4e68-b2f2-81a6c6781251" />
+
+
 
 
 ## 📄 Лицензия
