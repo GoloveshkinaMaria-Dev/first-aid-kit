@@ -119,7 +119,10 @@
 
 ## 📸 Скриншоты
 
-_..._
+<img width="953" height="539" alt="Снимок экрана 2026-10-26 094518" src="https://github.com/user-attachments/assets/9f8a433d-735f-477b-a11a-9b97f8cd5aa2" />
+<img width="945" height="744" alt="Снимок экрана 2026-10-26 094634" src="https://github.com/user-attachments/assets/f4735f0a-d7db-4e68-b2f2-81a6c6781251" />
+
+
 
 
 ## 📄 Лицензия
