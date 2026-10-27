@@ -59,7 +59,7 @@
   - [x] `status` — принято / пропущено / запланировано
 
 ### 🔹 Этап 3: CRUD-операции
-- [~] Добавление лекарства (`MedicineCreateView`)
+- [x] Добавление лекарства (`MedicineCreateView`)
 - [x] Список лекарств (`MedicineListView`) с карточками
 - [x] Редактирование лекарства (`MedicineUpdateView`)
 - [x] Удаление лекарства (`MedicineDeleteView`)
