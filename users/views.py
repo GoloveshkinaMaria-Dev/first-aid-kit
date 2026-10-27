@@ -1,8 +1,12 @@
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .forms import CustomUserCreationForm
 from .serializers import AvatarSerializer
 
 
@@ -34,3 +38,21 @@ class UserViewSet(DjoserUserViewSet):
             user.avatar = None
             user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@login_required
+def profile_view(request):
+    return render(request, "registration/profile.html", {"user": request.user})
+
+
+def register_view(request):
+    if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Автоматически логиним после регистрации
+            return redirect("medicine-list-html")  # Кидаем на аптечку
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, "registration/register.html", {"form": form})
