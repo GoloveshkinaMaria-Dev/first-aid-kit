@@ -1,0 +1,194 @@
+{% extends "base_auth.html" %}
+{% block title %}Мой профиль{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        display: block !important;
+        background-color: #f8f9fa;
+    }
+    .form-auth {
+        max-width: 900px !important;
+        padding: 0 !important;
+    }
+    
+</style>
+
+<div class="container-fluid p-0">
+    <div class="row g-4">
+        <div class="col-md-3">
+            <a href="/my-kit/">
+                💊Моя Аптечка
+            </a>
+            <div class="card shadow-sm p-3 text-center">
+                <div class="mb-3 position-relative d-inline-block mx-auto">
+                    {% if user.avatar %}
+                        <img id="avatar-img" src="{{ user.avatar.url }}" alt="Аватар" class="rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div id="avatar-placeholder" class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center shadow" style="width: 150px; height: 150px;">
+                            <span class="text-white fs-1">👤</span>
+                        </div>
+                        <img id="avatar-img" src="" class="rounded-circle shadow d-none" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                </div>
+
+                <h5 class="card-title mb-1">{{ user.username }}</h5>
+                <p class="text-muted small mb-4">{{ user.email|default:"Email не указан" }}</p>
+                
+                <form id="avatar-form" class="mt-2">
+                    <input type="file" id="avatar-input" class="form-control form-control-sm mb-2" accept="image/*" required>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Обновить фото</button>
+                </form>
+                <div id="avatar-msg" class="small mt-2"></div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Личные данные</h5>
+                </div>
+                <div class="card-body">
+                    <form id="profile-form">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Имя пользователя (Username)</label>
+                                <input type="text" class="form-control form-control-lg" id="username-input" value="{{ user.username }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control form-control-lg" id="email-input" value="{{ user.email }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success px-4">Сохранить изменения</button>
+                        <div id="profile-msg" class="small mt-2"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Форма смены пароля -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Смена пароля</h5>
+                </div>
+                <div class="card-body">
+                    <form id="password-form">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Текущий пароль</label>
+                                <input type="password" class="form-control form-control-lg" id="current-password" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Новый пароль</label>
+                                <input type="password" class="form-control form-control-lg" id="new-password" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning px-4">Изменить пароль</button>
+                        <div id="password-msg" class="small mt-2"></div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const getCsrfToken = () => document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
+    // 1. ОБНОВЛЕНИЕ АВАТАРА
+    document.getElementById('avatar-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        const file = document.getElementById('avatar-input').files[0];
+        formData.append('avatar', file);
+
+        const msg = document.getElementById('avatar-msg');
+        msg.innerHTML = '<span class="text-muted">Загрузка...</span>';
+
+        try {
+            const res = await fetch('/api/users/me/avatar/', {
+                method: 'PUT',
+                headers: { 'X-CSRFToken': getCsrfToken() },
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const img = document.getElementById('avatar-img');
+                img.src = data.avatar;
+                img.classList.remove('d-none');
+                document.getElementById('avatar-placeholder')?.remove();
+                msg.innerHTML = '<span class="text-success">Фото обновлено!</span>';
+            } else {
+                msg.innerHTML = '<span class="text-danger">Ошибка загрузки</span>';
+            }
+        } catch (error) {
+            msg.innerHTML = '<span class="text-danger">Ошибка сети</span>';
+        }
+    });
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('profile-msg');
+        const data = {
+            username: document.getElementById('username-input').value,
+            email: document.getElementById('email-input').value
+        };
+
+        try {
+            const res = await fetch('/api/auth/users/me/', {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                msg.innerHTML = '<span class="text-success">Данные сохранены!</span>';
+                setTimeout(() => window.location.reload(), 1000); 
+            } else {
+                const err = await res.json();
+                msg.innerHTML = `<span class="text-danger">Ошибка: ${JSON.stringify(err)}</span>`;
+            }
+        } catch (error) {
+            msg.innerHTML = '<span class="text-danger">Ошибка сети</span>';
+        }
+    });
+
+    document.getElementById('password-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('password-msg');
+        const data = {
+            current_password: document.getElementById('current-password').value,
+            new_password: document.getElementById('new-password').value
+        };
+
+        try {
+            const res = await fetch('/api/auth/users/set_password/', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                msg.innerHTML = '<span class="text-success">Пароль изменен!</span>';
+                document.getElementById('password-form').reset();
+            } else {
+                const err = await res.json();
+                msg.innerHTML = `<span class="text-danger">Ошибка: ${JSON.stringify(err)}</span>`;
+            }
+        } catch (error) {
+            msg.innerHTML = '<span class="text-danger">Ошибка сети</span>';
+        }
+    });
+});
+</script>
+{% endblock %}
