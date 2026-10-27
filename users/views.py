@@ -50,8 +50,8 @@ def register_view(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # Автоматически логиним после регистрации
-            return redirect("medicine-list-html")  # Кидаем на аптечку
+            login(request, user)
+            return redirect("medicine-list-html")
     else:
         form = CustomUserCreationForm()
 

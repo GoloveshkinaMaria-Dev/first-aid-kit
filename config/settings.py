@@ -33,8 +33,8 @@ ALLOWED_HOSTS = []
 # CSRF_COOKIE_SECURE = True
 # SECURE_SSL_REDIRECT = True
 
-LOGIN_REDIRECT_URL = "/my-kit/"  # Куда идти после успешного входа
-LOGOUT_REDIRECT_URL = "/login/"  # Куда идти после выхода
+LOGIN_REDIRECT_URL = "/my-kit/"
+LOGOUT_REDIRECT_URL = "/login/"
 LOGIN_URL = "/login/"
 
 INSTALLED_APPS = [
