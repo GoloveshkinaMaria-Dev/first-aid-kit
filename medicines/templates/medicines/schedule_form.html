@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление графика приема</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .day-checkbox { display: none; }
+        .day-label {
+            display: inline-block; padding: 10px 15px; margin: 5px;
+            border: 2px solid #dee2e6; border-radius: 50px; cursor: pointer;
+            user-select: none; font-weight: bold; color: #6c757d;
+        }
+        .day-checkbox:checked + .day-label {
+            background-color: #0d6efd; border-color: #0d6efd; color: white;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/my-kit/">🏥 First Aid Kit</a>
+        <div class="d-flex">
+            <a href="/my-schedule/" class="btn btn-outline-light btn-sm">← Назад к расписанию</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <!-- Ссылка ведет на текущий URL -->
+                    <a href="" class="text-white text-decoration-none">Новый график приема</a>
+                </h4>
+            </div>
+                <div class="card-body">
+                    <form id="scheduleForm">
+                        {% csrf_token %}
+                        
+                        <!-- Выбор лекарств -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Выберите лекарства:</label>
+                            <div class="border rounded p-3" style="max-height: 150px; overflow-y: auto;">
+                                {% for med in medicines %}
+                                <div class="form-check">
+                                    <input class="form-check-input medicine-checkbox" type="checkbox" value="{{ med.id }}" id="med_{{ med.id }}">
+                                    <label class="form-check-label" for="med_{{ med.id }}">
+                                        {{ med.name }} ({{ med.dosage }} мг)
+                                    </label>
+                                </div>
+                                {% empty %}
+                                <span class="text-muted">У вас пока нет лекарств. <a href="/my-kit/add/">Добавьте сначала.</a></span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Выбор дней недели -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Дни недели (если ничего не выбрано — каждый день):</label>
+                            <div class="d-flex flex-wrap">
+                                <input type="checkbox" class="day-checkbox day-input" id="day_1" value="1"><label class="day-label" for="day_1">Пн</label>
+                                <input type="checkbox" class="day-checkbox day-input" id="day_2" value="2"><label class="day-label" for="day_2">Вт</label>
+                                <input type="checkbox" class="day-checkbox day-input" id="day_3" value="3"><label class="day-label" for="day_3">Ср</label>
+                                <input type="checkbox" class="day-checkbox day-input" id="day_4" value="4"><label class="day-label" for="day_4">Чт</label>
+                                <input type="checkbox" class="day-checkbox day-input" id="day_5" value="5"><label class="day-label" for="day_5">Пт</label>
+                                <input type="checkbox" class="day-checkbox day-input" id="day_6" value="6"><label class="day-label" for="day_6">Сб</label>
+                                <input type="checkbox" class="day-checkbox day-input" id="day_7" value="7"><label class="day-label" for="day_7">Вс</label>
+                            </div>
+                        </div>
+
+                        <!-- Слоты времени -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Время приема:</label>
+                            <div id="slotsContainer">
+                                <div class="input-group mb-2 slot-row">
+                                    <input type="time" class="form-control slot-time" required>
+                                    <button type="button" class="btn btn-outline-danger remove-slot" disabled>Удалить</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="addSlotBtn">+ Добавить время</button>
+                        </div>
+
+                        <!-- Даты -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Дата начала:</label>
+                                <input type="date" class="form-control" id="startDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Дата окончания (необязательно):</label>
+                                <input type="date" class="form-control" id="endDate">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/my-schedule/" class="btn btn-outline-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-success" id="submitBtn">Сохранить график</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById("scheduleForm");
+    const slotsContainer = document.getElementById("slotsContainer");
+    const addSlotBtn = document.getElementById("addSlotBtn");
+
+    // 1. Логика добавления/удаления временных слотов
+    addSlotBtn.addEventListener("click", () => {
+        const newSlot = document.createElement("div");
+        newSlot.className = "input-group mb-2 slot-row";
+        newSlot.innerHTML = `
+            <input type="time" class="form-control slot-time" required>
+            <button type="button" class="btn btn-outline-danger remove-slot">Удалить</button>
+        `;
+        slotsContainer.appendChild(newSlot);
+        updateRemoveButtons();
+    });
+
+    slotsContainer.addEventListener("click", (e) => {
+        if (e.target.classList.contains("remove-slot")) {
+            e.target.closest(".slot-row").remove();
+            updateRemoveButtons();
+        }
+    });
+
+    function updateRemoveButtons() {
+        const rows = slotsContainer.querySelectorAll(".slot-row");
+        rows.forEach((row, index) => {
+            const btn = row.querySelector(".remove-slot");
+            // Нельзя удалить единственный слот
+            btn.disabled = (rows.length === 1);
+        });
+    }
+
+    // 2. Отправка формы на API
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault(); // Отменяем стандартную перезагрузку страницы
+        const submitBtn = document.getElementById("submitBtn");
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Сохранение...";
+
+        // Собираем ID лекарств
+        const medicines = Array.from(document.querySelectorAll(".medicine-checkbox:checked")).map(cb => parseInt(cb.value));
+        
+        // Собираем дни недели
+        const days_of_week = Array.from(document.querySelectorAll(".day-input:checked")).map(cb => parseInt(cb.value));
+
+        // Собираем временные слоты (добавляем секунды для формата HH:MM:SS)
+        const slots = Array.from(document.querySelectorAll(".slot-time")).map(input => ({
+            time: input.value + ":00"
+        }));
+
+        const start_date = document.getElementById("startDate").value;
+        const end_date = document.getElementById("endDate").value || null;
+
+        // Проверка на пустоту
+        if (medicines.length === 0) {
+            alert("Выберите хотя бы одно лекарство!");
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Сохранить график";
+            return;
+        }
+
+        // Формируем JSON
+        const data = {
+            medicines: medicines,
+            days_of_week: days_of_week,
+            start_date: start_date,
+            end_date: end_date,
+            slots: slots
+        };
+
+        // Отправляем POST запрос на API
+        try {
+            const response = await fetch("/api/schedules/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                // Если успешно — редирект на список графиков
+                window.location.href = "/my-schedule/";
+            } else {
+                const errorData = await response.json();
+                alert("Ошибка при создании: " + JSON.stringify(errorData));
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Сохранить график";
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Ошибка сети. Проверьте консоль.");
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Сохранить график";
+        }
+    });
+});
+</script>
+</body>
+</html>

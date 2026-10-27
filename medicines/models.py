@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.db import models
 
 from users.models import User
+
 from .constants import MAX_LENGTH_NAME, MAX_LENGTH_SLUG, Frequency, Status
 
 
