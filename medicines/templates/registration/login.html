@@ -1,0 +1,27 @@
+{% extends "base_auth.html" %}
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+    <h4 class="mb-3 text-center">Вход в систему</h4>
+
+    {% if form.errors %}
+        <div class="alert alert-danger py-2">Неверный email или пароль.</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label">{{ field.label }}</label>
+                <!-- Добавляем класс form-control для красоты -->
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" required>
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn btn-primary w-100 mt-3">Войти</button>
+    </form>
+    
+    <div class="text-center mt-3">
+        <a href="{% url 'register' %}" class="text-decoration-none">Нет аккаунта? Зарегистрироваться</a>
+    </div>
+{% endblock %}
