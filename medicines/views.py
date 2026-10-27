@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from .forms import MedicineForm
 from .models import Medicine, Schedule
 from .serializers import MedicineSerializer, SchedulerSerializer
 
@@ -44,3 +45,34 @@ def schedule_list_html(request):
     )
 
     return render(request, "medicines/schedule_list.html", {"schedules": schedules})
+
+
+def medicine_create_html(request):
+    if request.method == "POST":
+        form = MedicineForm(request.POST)
+        if form.is_valid():
+            medicine = form.save(commit=False)
+            medicine.user = request.user
+            # Slug генерю из названия
+            medicine.slug = medicine.name.lower().replace(" ", "-")
+            medicine.save()
+
+            return redirect("medicine-list-html")
+    else:
+        form = MedicineForm()
+
+    return render(request, "medicines/medicine_form.html", {"form": form})
+
+
+def medicine_edit_html(request, medicine_id: int):
+    medicine = get_object_or_404(Medicine, id=medicine_id, user=request.user)
+
+    if request.method == "POST":
+        form = MedicineForm(request.POST, instance=medicine)
+        if form.is_valid():
+            form.save()
+            return redirect("medicine-list-html")
+    else:
+        form = MedicineForm(instance=medicine)
+
+    return render(request, "medicines/medicine_form.html", {"form": form, "medicine": medicine})
