@@ -13,25 +13,49 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-6bm^dv3y^_9y6yh3tkcjw!)hyb1%4yrf8ii=*d#jqlbqg0ex@m"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-change-me")
+DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() == "true"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
 
-# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
-# SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False
+SECURE_HSTS_SECONDS = 30
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        "127.0.0.1,localhost,first-aid-kit.duckdns.org",
+    ).split(",")
+    if h.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get(
+        "DJANGO_CSRF_TRUSTED_ORIGINS",
+        "https://first-aid-kit.duckdns.org,http://127.0.0.1:8000",
+    ).split(",")
+    if o.strip()
+]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 
 LOGIN_REDIRECT_URL = "/my-kit/"
 LOGOUT_REDIRECT_URL = "/login/"
@@ -136,8 +160,9 @@ DJOSER = {
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 MEDIA_URL = "/avatar/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "avatars")
 # Default primary key field type
