@@ -1,0 +1,55 @@
+# Пример конфига для nginx.
+# Скопируйте в <nginx>\conf\nginx.conf и замените:
+#   YOUR_DOMAIN       first-aid-kit.duckdns.org
+#   C:/path/to/certs  путь, куда вы копируете fullchain.pem/privkey.pem
+#   C:/path/to/app    путь к папке Django-проекта
+
+worker_processes  1;
+events { worker_connections 1024; }
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    sendfile      on;
+    keepalive_timeout 65;
+
+    # HTTP → HTTPS
+    server {
+        listen       80;
+        server_name  YOUR_DOMAIN;
+        return 301 https://$host$request_uri;
+    }
+
+    # HTTPS
+    server {
+        listen       443 ssl;
+        server_name  YOUR_DOMAIN;
+
+        # Скопируйте полную цепочку и ключ в обычную папку
+        ssl_certificate     C:/path/to/certs/fullchain.pem;
+        ssl_certificate_key C:/path/to/certs/privkey.pem;
+
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+        ssl_session_cache   shared:SSL:10m;
+        ssl_session_timeout 10m;
+
+        # Django
+        location / {
+            proxy_pass         http://127.0.0.1:8000;
+            proxy_set_header   Host              $host;
+            proxy_set_header   X-Real-IP         $remote_addr;
+            proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+            proxy_set_header   X-Forwarded-Host  $host;
+        }
+
+        # Статика (после python manage.py collectstatic)
+        location /static/ {
+            alias C:/path/to/app/staticfiles/;
+        }
+        location /media/ {
+            alias C:/path/to/app/media/;
+        }
+    }
+}
