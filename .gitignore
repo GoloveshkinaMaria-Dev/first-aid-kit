@@ -26,3 +26,17 @@ db.sqlite3-journal
 # медиа
 avatars/
 media/
+
+# Секреты и сертификаты (НИКОГДА в git)
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+certbot/
+certs/
+letsencrypt/
+
+# nginx логи/временные
+logs/
+*.pid
