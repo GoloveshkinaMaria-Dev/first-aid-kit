@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from .forms import MedicineForm
 from .models import IntakeLog, Medicine, Schedule
 from .serializers import IntakeLogSerializer, MedicineSerializer, SchedulerSerializer
+from .services import generate_schedule
 
 
 class MedicineView(viewsets.ModelViewSet):
@@ -25,6 +26,10 @@ class ScheduleView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Schedule.objects.filter(medicines__user=self.request.user)
+
+    def perform_create(self, serializer):
+        schedule = serializer.save()
+        generate_schedule(schedule)
 
 
 @login_required
@@ -101,3 +106,8 @@ class IntakeLogViewSet(viewsets.ModelViewSet):
         log.save()
         serializer = self.get_serializer(log)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@login_required
+def today_list_html(request):
+    return render(request, "medicines/today.html")

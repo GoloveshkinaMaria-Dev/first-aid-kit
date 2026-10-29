@@ -77,14 +77,17 @@ class SchedulerSerializer(serializers.ModelSerializer):
 
 
 class IntakeLogSerializer(serializers.ModelSerializer):
+    medicine_name = serializers.CharField(source="medicine.name", read_only=True)
+
     class Meta:
         model = IntakeLog
         fields = (
             "id",
             "schedule",
+            "medicine",
+            "medicine_name",
             "scheduled_at",
             "taken_at",
             "status",
-            "user",
         )
         read_only_fields = ("id",)

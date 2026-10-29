@@ -74,7 +74,7 @@ class Schedule(models.Model):
         verbose_name_plural = "Графики приёма"
 
     def __str__(self):
-        return f"{self.medicine.name} — {self.get_frequency_display()} в {self.time_of_day}"
+        return f"{self.medicines.name} — {self.get_frequency_display()}"
 
 
 class ScheduleSlot(models.Model):
@@ -100,7 +100,9 @@ class IntakeLog(models.Model):
     )
     scheduled_at = models.DateTimeField(verbose_name="Запланированное время")
     taken_at = models.DateTimeField(null=True, blank=True, verbose_name="Фактическое время приема")
-    status = models.CharField(choices=Status.choices, max_length=20, verbose_name="Статус")
+    status = models.CharField(
+        choices=Status.choices, max_length=20, default="pending", verbose_name="Статус"
+    )
 
     class Meta:
         verbose_name = "Запись о приёме"
