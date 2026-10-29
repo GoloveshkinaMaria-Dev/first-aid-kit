@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прием на сегодня</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .intake-card { transition: all 0.3s ease; border-left: 5px solid #0d6efd; }
+        .intake-card.taken { border-left-color: #198754; background-color: #f8f9fa; opacity: 0.7; }
+        .intake-card.taken .card-title { text-decoration: line-through; color: #6c757d; }
+        .time-badge { font-size: 1.2rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/my-kit/">🏥 First Aid Kit</a>
+        <div class="d-flex">
+            <a href="/my-kit/" class="btn btn-outline-light btn-sm me-2">Аптечка</a>
+            <a href="/my-schedule/" class="btn btn-outline-light btn-sm me-2">Расписание</a>
+            <a href="/profile/" class="btn btn-outline-light btn-sm">Профиль</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Мой прием на сегодня</h2>
+        <button id="enable-notifications" class="btn btn-outline-primary btn-sm d-none">
+            🔔 Включить уведомления
+        </button>
+    </div>
+
+    <div id="loading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">Загружаем ваши таблетки...</p>
+    </div>
+
+    <div id="intake-list" class="row row-cols-1 row-cols-md-2 g-4"></div>
+    
+    <div id="empty-state" class="text-center mt-5 d-none">
+        <h4 class="text-muted">На сегодня приемов нет 🎉</h4>
+        <p>Отдыхайте или добавьте новый график в расписании.</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const listContainer = document.getElementById('intake-list');
+    const loading = document.getElementById('loading');
+    const emptyState = document.getElementById('empty-state');
+    const enableBtn = document.getElementById('enable-notifications');
+
+    const getCsrfToken = () => document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
+    if ("Notification" in window) {
+        if (Notification.permission === "default") {
+            enableBtn.classList.remove("d-none");
+            enableBtn.addEventListener("click", () => {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        enableBtn.classList.add("d-none");
+                        new Notification("Уведомления включены!", { body: "Теперь мы напомним вам о приеме." });
+                    }
+                });
+            });
+        }
+    }
+
+    function checkNotifications(intakes) {
+        if (Notification.permission !== "granted") return;
+
+        const now = new Date();
+        const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+        intakes.forEach(item => {
+            if (item.status === 'pending' && item.scheduled_at) {
+                const scheduledTime = new Date(item.scheduled_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                
+                if (scheduledTime === currentTime) {
+                    // Проверяем, не показывали ли мы уже уведомление для этого ID (чтобы не спамить)
+                    if (!window.notifiedIds) window.notifiedIds = new Set();
+                    if (!window.notifiedIds.has(item.id)) {
+                        new Notification("💊 Пора пить лекарство!", {
+                            body: `${item.medicine_name} в ${scheduledTime}`,
+                            icon: "/static/favicon.ico" // Можно добавить свою иконку
+                        });
+                        window.notifiedIds.add(item.id);
+                    }
+                }
+            }
+        });
+    }
+
+    let todayIntakes = []; // Глобальная переменная для таймера
+
+    async function loadTodayIntakes() {
+        try {
+            const res = await fetch('/api/intakes/', {
+                headers: { 'Accept': 'application/json' }
+            });
+            
+            if (!res.ok) throw new Error('Ошибка загрузки');
+            const data = await res.json();
+            
+            const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            todayIntakes = data.filter(item => item.scheduled_at.startsWith(todayStr));
+
+            loading.classList.add('d-none');
+
+            if (todayIntakes.length === 0) {
+                emptyState.classList.remove('d-none');
+                return;
+            }
+
+            renderIntakes(todayIntakes);
+            
+            setInterval(() => checkNotifications(todayIntakes), 60000);
+
+        } catch (error) {
+            loading.innerHTML = `<p class="text-danger">Ошибка загрузки: ${error.message}</p>`;
+        }
+    }
+
+    function renderIntakes(intakes) {
+        listContainer.innerHTML = '';
+        
+        // Сортируем по времени
+        intakes.sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
+
+        intakes.forEach(item => {
+            const time = new Date(item.scheduled_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            const isTaken = item.status === 'taken';
+            
+            const col = document.createElement('div');
+            col.className = 'col';
+            col.innerHTML = `
+                <div class="card h-100 intake-card ${isTaken ? 'taken' : ''} shadow-sm" id="card-${item.id}">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="time-badge text-primary">${time}</span>
+                            <h5 class="card-title mt-2 mb-0">${item.medicine_name}</h5>
+                        </div>
+                        <button class="btn ${isTaken ? 'btn-success' : 'btn-outline-success'} btn-lg rounded-circle" 
+                                onclick="markAsTaken(${item.id})" 
+                                ${isTaken ? 'disabled' : ''}>
+                            ${isTaken ? '✓' : '✓ Выпить'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            listContainer.appendChild(col);
+        });
+    }
+
+    // --- ОТМЕТКА О ПРИЕМЕ ---
+    window.markAsTaken = async function(id) {
+        try {
+            const res = await fetch(`/api/intakes/${id}/mark_as_taken/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+
+            if (res.ok) {
+                const card = document.getElementById(`card-${id}`);
+                card.classList.add('taken');
+                const btn = card.querySelector('button');
+                btn.className = 'btn btn-success btn-lg rounded-circle';
+                btn.disabled = true;
+                btn.innerText = '✓';
+
+                const item = todayIntakes.find(i => i.id === id);
+                if (item) item.status = 'taken';
+            } else {
+                alert('Не удалось отметить прием');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Ошибка сети');
+        }
+    };
+
+    loadTodayIntakes();
+});
+</script>
+</body>
+</html>
