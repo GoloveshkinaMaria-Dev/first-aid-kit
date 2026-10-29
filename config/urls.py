@@ -11,6 +11,7 @@ from medicines.views import (
     medicine_list_html,
     schedule_create_html,
     schedule_list_html,
+    today_list_html,
 )
 from users.views import UserViewSet, profile_view, register_view
 
@@ -40,6 +41,7 @@ urlpatterns = [
     path("my-kit/<int:medicine_id>/edit/", medicine_edit_html, name="medicine-edit-html"),
     path("my-schedule/", schedule_list_html, name="schedule-list-html"),
     path("my-schedule/add/", schedule_create_html, name="schedule-add-html"),
+    path("my-kit/today", today_list_html, name="today-list-html"),
 ]
 
 
